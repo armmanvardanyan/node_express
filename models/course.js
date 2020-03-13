@@ -1,4 +1,4 @@
-const uuid = require("uuid/v5")
+const uuid = require("uuid/v4")
 const fs = require("fs")
 const path = require("path")
 class Course {
@@ -20,7 +20,6 @@ class Course {
     async save() {
         const courses = await Course.getAll()
         courses.push(this.toJson())
-
         return new Promise((resolve,reject) => {
           fs.writeFile(
                 path.join(__dirname,"../data","courses.json"),
@@ -32,11 +31,6 @@ class Course {
             )
         })
     }
-    static async  getById(id){
-        const courses = await Course.getAll()
-        console.log(courses[0])
-        return  courses.find(c => c.id === id)
-    }  
     static async getAll(){
         return new Promise((resolve,reject) => {
             fs.readFile(
@@ -53,7 +47,31 @@ class Course {
             )
         })
     }
+    static async getById(id){
+        try {
+            const courses = await Course.getAll()
+               return courses.find(c=>c.id === id)
+        } catch (err) {
+            if(err) throw err
+        }
+    }
+    static async update(course){
+        const courses = await Course.getAll()
+            const idx = courses.findIndex(c =>c.id === course.id)
+                courses[idx] = course
+            return new Promise((resolve,reject) => {
+                fs.writeFile(
+                        path.join(__dirname,"../data","courses.json"),
+                        JSON.stringify(courses),
+                        err => {
+                            if(err){reject(err) }
+                            else{resolve() }
+                        }
+                    )
+                })
+
+    }
     
-}
+}   
 
 module.exports = Course
